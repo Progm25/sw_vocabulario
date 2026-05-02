@@ -127,6 +127,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Validar e Inicializar Universo"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnValidarActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
@@ -214,11 +217,17 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="A&#xf1;adir Propiedad al Lenguaje"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAnadirActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnGenerar">
           <Properties>
             <Property name="text" type="java.lang.String" value="Finalizar y Generar Lenguaje"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGenerarActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

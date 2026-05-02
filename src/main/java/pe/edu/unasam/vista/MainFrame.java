@@ -1,11 +1,218 @@
 package pe.edu.unasam.vista;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import javax.swing.JOptionPane;
+import javax.swing.border.TitledBorder;
+
 public class MainFrame extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainFrame.class.getName());
+
+    // --- Variables de Lógica ---
+    private List<String> universoV = new ArrayList<>();
+    private String[] vocabularioGuardado;
+    private int longitudMaximaGuardada;
+    private int cantidadTotalLenguajes = 0;
+    private int lenguajeActual = 1;
+    private Predicate<String> condicionActual = palabra -> true;
+    private int propiedadesAgregadas = 0;
 
     public MainFrame() {
         initComponents();
+
+        this.setTitle("Generador de Lenguajes Formales");
+        this.setLocationRelativeTo(null);
+
+        cbxTipo.removeAllItems();
+        cbxTipo.addItem("Longitud exacta");
+        cbxTipo.addItem("Inicia con");
+        cbxTipo.addItem("Termina con");
+        cbxTipo.addItem("Contiene");
+
+        // Bloquear botones de propiedades hasta que el universo sea válido
+        btnAnadir.setEnabled(false);
+        btnGenerar.setEnabled(false);
+
+    }
+
+    private void configurarComponentesManual() {
+        // Configurar el ComboBox con las propiedades
+        cbxTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{
+            "Longitud exacta", "Inicia con", "Termina con", "Contiene"
+        }));
+
+        // Bloquear panel de propiedades hasta validar universo
+        habilitarPanelPropiedades(false);
+
+        // --- Asignación de Eventos ---
+        btnValidar.addActionListener(evt -> accionValidarUniverso());
+        btnAnadir.addActionListener(evt -> accionAnadirPropiedad());
+        btnGenerar.addActionListener(evt -> accionGenerarLenguaje());
+    }
+
+    // --- LÓGICA DE EVENTOS ---
+    private void accionValidarUniverso() {
+        String inputVocab = txtVocabulario.getText().trim();
+        if (inputVocab.isEmpty()) {
+            mostrarError("El vocabulario no puede estar vacío.");
+            return;
+        }
+
+        // Limpiar y validar símbolos duplicados
+        String[] rawVocab = inputVocab.split(",");
+        Set<String> vocabSet = new HashSet<>();
+        for (String s : rawVocab) {
+            String limpio = s.trim();
+            if (!limpio.isEmpty()) {
+                vocabSet.add(limpio);
+            }
+        }
+
+        if (vocabSet.isEmpty()) {
+            mostrarError("Ingrese al menos un símbolo válido.");
+            return;
+        }
+
+        vocabularioGuardado = vocabSet.toArray(new String[0]);
+
+        try {
+            longitudMaximaGuardada = Integer.parseInt(txtLongitud.getText().trim());
+            cantidadTotalLenguajes = Integer.parseInt(txtCantidad.getText().trim());
+
+            if (longitudMaximaGuardada <= 0 || cantidadTotalLenguajes <= 0) {
+                mostrarError("Los valores numéricos deben ser mayores a 0.");
+                return;
+            }
+
+            // Generar V*
+            universoV.clear();
+            generarUniverso(vocabularioGuardado, "", longitudMaximaGuardada);
+
+            txtaResultados.setText("SISTEMA INICIALIZADO\n");
+            txtaResultados.append("Vocabulario V = {" + String.join(", ", vocabularioGuardado) + "}\n");
+            txtaResultados.append("Universo V* generado: " + universoV.size() + " palabras.\n");
+            txtaResultados.append("--------------------------------------------------\n");
+
+            // Bloquear configuración inicial
+            btnValidar.setEnabled(false);
+            txtVocabulario.setEnabled(false);
+            txtLongitud.setEnabled(false);
+            txtCantidad.setEnabled(false);
+
+            lenguajeActual = 1;
+            reiniciarCondicionesLenguaje();
+            habilitarPanelPropiedades(true);
+
+        } catch (NumberFormatException ex) {
+            mostrarError("La longitud y cantidad deben ser números enteros.");
+        }
+    }
+
+    private void accionAnadirPropiedad() {
+        String tipo = (String) cbxTipo.getSelectedItem();
+        String valor = txtValor.getText().trim();
+
+        if (valor.isEmpty()) {
+            mostrarError("Ingrese un valor para la propiedad.");
+            return;
+        }
+
+        try {
+            if (tipo.equals("Longitud exacta")) {
+                int len = Integer.parseInt(valor);
+                if (len < 0) {
+                    mostrarError("No existen longitudes negativas.");
+                    return;
+                }
+                condicionActual = condicionActual.and(p -> p.length() == len);
+            } else {
+                // Validar que los caracteres de la propiedad existan en el vocabulario
+                if (!esCadenaValida(valor)) {
+                    mostrarError("El valor contiene símbolos ajenos al vocabulario.");
+                    return;
+                }
+                switch (tipo) {
+                    case "Inicia con":
+                        condicionActual = condicionActual.and(p -> p.startsWith(valor));
+                        break;
+                    case "Termina con":
+                        condicionActual = condicionActual.and(p -> p.endsWith(valor));
+                        break;
+                    case "Contiene":
+                        condicionActual = condicionActual.and(p -> p.contains(valor));
+                        break;
+                }
+            }
+            propiedadesAgregadas++;
+            txtValor.setText("");
+            txtaResultados.append("L" + lenguajeActual + " -> Agregada: " + tipo + " (" + valor + ")\n");
+        } catch (NumberFormatException ex) {
+            mostrarError("Para longitud, ingrese un número.");
+        }
+    }
+
+    private void accionGenerarLenguaje() {
+        List<String> resultado = universoV.stream()
+                .filter(condicionActual)
+                .collect(Collectors.toList());
+
+        txtaResultados.append(">>> RESULTADO L" + lenguajeActual + " = {"
+                + (resultado.isEmpty() ? "Ø" : String.join(", ", resultado)) + "}\n");
+        txtaResultados.append("--------------------------------------------------\n");
+
+        lenguajeActual++;
+
+        if (lenguajeActual > cantidadTotalLenguajes) {
+            habilitarPanelPropiedades(false);
+            JOptionPane.showMessageDialog(this, "Se han generado todos los lenguajes.");
+        } else {
+            reiniciarCondicionesLenguaje();
+        }
+    }
+
+    // --- MÉTODOS DE APOYO ---
+    private void generarUniverso(String[] vocab, String actual, int max) {
+        if (!actual.isEmpty()) {
+            universoV.add(actual);
+        }
+        if (actual.length() < max) {
+            for (String s : vocab) {
+                generarUniverso(vocab, actual + s, max);
+            }
+        }
+    }
+
+    private boolean esCadenaValida(String cadena) {
+        String v = String.join("", vocabularioGuardado);
+        for (char c : cadena.toCharArray()) {
+            if (v.indexOf(c) == -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void habilitarPanelPropiedades(boolean b) {
+        cbxTipo.setEnabled(b);
+        txtValor.setEnabled(b);
+        btnAnadir.setEnabled(b);
+        btnGenerar.setEnabled(b);
+    }
+
+    private void reiniciarCondicionesLenguaje() {
+        condicionActual = p -> true;
+        propiedadesAgregadas = 0;
+        ((TitledBorder) jPanel2.getBorder()).setTitle("Definir propiedades para L" + lenguajeActual);
+        jPanel2.repaint();
+    }
+
+    private void mostrarError(String m) {
+        JOptionPane.showMessageDialog(this, m, "Error de Validación", JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -48,6 +255,11 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel3.setText("Cantidad de lenguaje a generar");
 
         btnValidar.setText("Validar e Inicializar Universo");
+        btnValidar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnValidarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -99,8 +311,18 @@ public class MainFrame extends javax.swing.JFrame {
         cbxTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         btnAnadir.setText("Añadir Propiedad al Lenguaje");
+        btnAnadir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnadirActionPerformed(evt);
+            }
+        });
 
         btnGenerar.setText("Finalizar y Generar Lenguaje");
+        btnGenerar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGenerarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -180,6 +402,21 @@ public class MainFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnValidarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnValidarActionPerformed
+        // TODO add your handling code here:
+        accionValidarUniverso();
+    }//GEN-LAST:event_btnValidarActionPerformed
+
+    private void btnAnadirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnadirActionPerformed
+        // TODO add your handling code here:
+        accionAnadirPropiedad();
+    }//GEN-LAST:event_btnAnadirActionPerformed
+
+    private void btnGenerarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerarActionPerformed
+        // TODO add your handling code here:
+        accionGenerarLenguaje();
+    }//GEN-LAST:event_btnGenerarActionPerformed
 
     /**
      * @param args the command line arguments
