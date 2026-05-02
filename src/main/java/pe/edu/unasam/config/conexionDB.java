@@ -12,7 +12,7 @@ public class conexionDB {
     public static String password = "2025";
     public static String host = "localhost";
     public static String port = "3306";
-    public static String db = "jass3030";
+    public static String db = "alfabeto";
         
     // metodo para optener la conexion
     public static Connection iniciarConexion(){
@@ -38,15 +38,15 @@ public class conexionDB {
 
 
 
-
+// CODIGO SQL DE LA BASE DE DATOS
 
 
 /*
 
 
 -- Creación de la base de datos
-CREATE DATABASE IF NOT EXISTS jass3030; -- Usando el nombre que tienes en tu código Java
-USE jass3030;
+CREATE DATABASE IF NOT EXISTS alfabeto; -- Usando el nombre que tienes en tu código Java
+USE alfabeto;
 
 -- Tabla: propiedad (Obligatoria)
 -- Esta tabla reemplaza los arreglos en memoria y define las reglas lógicas.
