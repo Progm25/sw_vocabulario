@@ -1,13 +1,30 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package pe.edu.unasam.dao;
 
-/**
- *
- * @author poo
- */
+
+import java.util.ArrayList;
+import pe.edu.unasam.modelo.propiedades;
+
+
 public class propiedadesDAO {
+   
+    
+    public java.util.List<propiedades> obtenerTodosLosLibros() {
+        // Creamos una lista vacía donde iremos guardando todas las propiedades
+        java.util.List<propiedades> listaPropiedades = new ArrayList<>();
+        // Devolvemos la lista llena (o vacía si hubo error)
+        
+        try {
+            
+            
+        } catch (Exception e) {
+            
+        }
+        
+        
+        return listaPropiedades;
+    }
+    
+    
     
 }
