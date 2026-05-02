@@ -9,5 +9,7 @@ package pe.edu.unasam.modelo;
  * @author poo
  */
 public class historialEjecucion {
+    private String id;
+    
     
 }
