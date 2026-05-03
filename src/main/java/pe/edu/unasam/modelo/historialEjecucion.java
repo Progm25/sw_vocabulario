@@ -2,52 +2,39 @@ package pe.edu.unasam.modelo;
 
 public class historialEjecucion {
     
-    private String id;
+    private int idEjecucion;
     private String vocabulario;
-    private String cantidad_lenguas;
-    private String fecha_registro;
-    
-    public historialEjecucion() {
-    
+    private int cantidadLenguajes;
+    private Timestamp fechaRegistro;
+
+    // Constructor vacío (Muy importante para instanciar en el DAO)
+    public HistorialEjecucion() {
     }
 
-    public historialEjecucion(String id, String vocabulario, String cantidad_lenguas, String fecha_registro) {
-        this.id = id;
+    // Constructor completo
+    public HistorialEjecucion(int idEjecucion, String vocabulario, int cantidadLenguajes, Timestamp fechaRegistro) {
+        this.idEjecucion = idEjecucion;
         this.vocabulario = vocabulario;
-        this.cantidad_lenguas = cantidad_lenguas;
-        this.fecha_registro = fecha_registro;
+        this.cantidadLenguajes = cantidadLenguajes;
+        this.fechaRegistro = fechaRegistro;
     }
 
-    public String getId() {
-        return id;
-    }
+    // Getters y Setters
+    public int getIdEjecucion() { return idEjecucion; }
+    public void setIdEjecucion(int idEjecucion) { this.idEjecucion = idEjecucion; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getVocabulario() { return vocabulario; }
+    public void setVocabulario(String vocabulario) { this.vocabulario = vocabulario; }
 
-    public String getVocabulario() {
-        return vocabulario;
-    }
+    public int getCantidadLenguajes() { return cantidadLenguajes; }
+    public void setCantidadLenguajes(int cantidadLenguajes) { this.cantidadLenguajes = cantidadLenguajes; }
 
-    public void setVocabulario(String vocabulario) {
-        this.vocabulario = vocabulario;
-    }
+    public Timestamp getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(Timestamp fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 
-    public String getCantidad_lenguas() {
-        return cantidad_lenguas;
-    }
-
-    public void setCantidad_lenguas(String cantidad_lenguas) {
-        this.cantidad_lenguas = cantidad_lenguas;
-    }
-
-    public String getFecha_registro() {
-        return fecha_registro;
-    }
-
-    public void setFecha_registro(String fecha_registro) {
-        this.fecha_registro = fecha_registro;
+    @Override
+    public String toString() {
+        return "Ejecución [" + fechaRegistro + "] - Vocabulario: {" + vocabulario + "} - Lenguajes: " + cantidadLenguajes;
     }
     
 }
